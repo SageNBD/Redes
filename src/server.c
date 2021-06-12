@@ -1,15 +1,34 @@
+/*
+ * 
+ * Vitor Augusto de Oliveira - 9360815 
+ *
+ *      TRABALHO 1 - REDES
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <stdio.h>
-#include <string.h>
+#include <socket_utils.h>
 
 #define MAX_PENDING_CONNECTIONS     3
-#define MAX_BYTES_TO_RECEIVE        3
-#define PORT                        3001
+#define MAX_BYTES_TO_RECEIVE        40
 
+/*
+ * void send_message_to_client(int socket_fd)
+ * 
+ * Fica esperando por uma mensagem de um cliente via funcao accept()
+ * e retorna a mensagem padrao do servidor para o mesmo.
+ *
+ * Params:
+ *      @socket_fd  int     file descriptor do socket
+ * Return:
+ *      void
+ */
 void send_message_to_client(int socket_fd)
 {
     char default_server_response_msg[] = "Vc se conectou ao servidor!";
@@ -44,29 +63,13 @@ void send_message_to_client(int socket_fd)
 
 int main(int argc, char *argv[])
 {
-    // Criando o Socket
-    int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (socket_fd == -1) 
-    {
-        fprintf(stderr, "Erro ao criar socket!\n");
-        return 0;
-    }
-    fprintf(stderr, "Socket criado com sucesso.\n");
+    int socket_fd = create_socket();
 
     // Bind da porta ao socket
     struct sockaddr_in server;
-    server.sin_family = AF_INET;
-    server.sin_port = htons(PORT);
-    inet_aton("127.0.0.1", &(server.sin_addr));
+    bind_port_to_socket(socket_fd, &server);
 
-    fprintf(stderr, "Abrindo a porta %d...\n", PORT);
-    if (bind(socket_fd, (struct sockaddr *) &server, sizeof(server)) != 0)
-    {
-        fprintf(stderr, "Erro ao abrir a porta %d!\n", PORT);
-        return 0;
-    }
-
-    // Ouvindo na porta
+    // Ouvindo conexoes no socket
     listen(socket_fd, MAX_PENDING_CONNECTIONS);
 
     send_message_to_client(socket_fd);
